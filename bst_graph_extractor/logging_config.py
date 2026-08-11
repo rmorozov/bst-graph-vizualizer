@@ -29,6 +29,7 @@ STAGE_NAMES = {
     "serializer": "serializer",
     "metrics": "metrics",
     "timeout_guard": "timeout_guard",
+    "cheap_metrics": "cheap_metrics",
 }
 
 
@@ -126,3 +127,40 @@ def stage_warning(logger: logging.Logger, message: str):
 def stage_error(logger: logging.Logger, message: str):
     """Log an ERROR-level message for fatal errors."""
     logger.error(message)
+
+
+# Global config instance (set by setup_logging)
+_config: Optional[LoggingConfig] = None
+
+
+def get_logger(stage: str) -> logging.Logger:
+    """
+    Get a logger for a specific stage/module.
+    
+    This is a convenience function that uses the global config.
+    For explicit control, use LoggingConfig.get_logger() instead.
+    
+    Args:
+        stage: One of the predefined stage names from STAGE_NAMES
+        
+    Returns:
+        Configured logger instance
+    """
+    global _config
+    if _config is None:
+        # Auto-initialize with default settings if not yet configured
+        _config = LoggingConfig()
+    
+    return _config.get_logger(stage)
+
+
+def initialize_logging(verbose: bool = False, quiet: bool = False):
+    """
+    Initialize the global logging configuration.
+    
+    Args:
+        verbose: Enable INFO-level output (-v flag)
+        quiet: Suppress all but ERROR output (-q flag)
+    """
+    global _config
+    _config = LoggingConfig(verbose=verbose, quiet=quiet)
