@@ -1,0 +1,546 @@
+{
+  "metadata": {
+    "schemaVersion": "5.5.0",
+    "target": "dag.bst",
+    "totalNodes": 10,
+    "totalEdges": 8,
+    "globalCriticalPathLength": 10,
+    "maxTopoLayer": 9,
+    "maxConcurrencyWidth": 1,
+    "density": 0.08888888888888889,
+    "levelCounts": {
+      "0": 1,
+      "1": 1,
+      "2": 1,
+      "3": 1,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 1,
+      "8": 1,
+      "9": 1
+    },
+    "kindColorMap": {
+      "build": "#1890ff",
+      "import": "#52c41a",
+      "compose": "#faad14",
+      "script": "#722ed1",
+      "source": "#eb2f96"
+    },
+    "depTypeColorMap": {
+      "build": "#1890ff",
+      "runtime": "#52c41a",
+      "both": "#722ed1"
+    },
+    "heatmapGradient": [
+      "#fffbe6",
+      "#fff1b8",
+      "#ff7a45",
+      "#cf1322"
+    ],
+    "hasCycles": false,
+    "layoutPrecomputed": false,
+    "reachabilityMode": "exact",
+    "bottleneckMetric": "approximate",
+    "articulationSemantics": "undirected_projection",
+    "graphSizeClass": "normal",
+    "performance": {
+      "parseMs": 0,
+      "graphConstructionMs": 0,
+      "sccMs": 0,
+      "reachabilityMs": 0,
+      "criticalPathMs": 0,
+      "betweennessMs": 0,
+      "articulationMs": 0,
+      "layoutMs": 0,
+      "serializationMs": 0,
+      "totalMs": 0,
+      "peakMemoryMb": 0,
+      "maxReachabilityMemoryMb": 512,
+      "targetedReachabilityK": 2000,
+      "metricTimeoutSeconds": 60
+    },
+    "analysisModes": {
+      "reachability": "exact",
+      "betweenness": "approximate",
+      "articulation": "approximate",
+      "layout": "none"
+    }
+  },
+  "nodes": [
+    {
+      "id": "node_0000.bst",
+      "type": "rect",
+      "combo": "@root",
+      "x": 0.0,
+      "y": 0.0,
+      "data": {
+        "label": "node_0000.bst",
+        "kind": "build",
+        "sccId": null,
+        "inDegree": 0,
+        "outDegree": 0,
+        "topoLayer": 0,
+        "cpDepth": 0,
+        "cpHeight": 9,
+        "blastRadius": 9,
+        "buildCost": 0,
+        "bottleneckScore": null,
+        "isCritical": true,
+        "isArticulationPoint": false,
+        "isCycle": false
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#e6f7ff",
+        "stroke": "#1890ff",
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "node_0001.bst",
+      "type": "rect",
+      "combo": "@root",
+      "x": 100.0,
+      "y": 50.0,
+      "data": {
+        "label": "node_0001.bst",
+        "kind": "import",
+        "sccId": null,
+        "inDegree": 0,
+        "outDegree": 0,
+        "topoLayer": 1,
+        "cpDepth": 1,
+        "cpHeight": 8,
+        "blastRadius": 8,
+        "buildCost": 1,
+        "bottleneckScore": 0.025,
+        "isCritical": false,
+        "isArticulationPoint": true,
+        "isCycle": false
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#e6f7ff",
+        "stroke": "#52c41a",
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "node_0002.bst",
+      "type": "rect",
+      "combo": "@root",
+      "x": 200.0,
+      "y": 100.0,
+      "data": {
+        "label": "node_0002.bst",
+        "kind": "compose",
+        "sccId": null,
+        "inDegree": 0,
+        "outDegree": 1,
+        "topoLayer": 2,
+        "cpDepth": 2,
+        "cpHeight": 7,
+        "blastRadius": 7,
+        "buildCost": 2,
+        "bottleneckScore": 0.2232,
+        "isCritical": false,
+        "isArticulationPoint": true,
+        "isCycle": false
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#e6f7ff",
+        "stroke": "#faad14",
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "node_0003.bst",
+      "type": "rect",
+      "combo": "@root",
+      "x": 300.0,
+      "y": 150.0,
+      "data": {
+        "label": "node_0003.bst",
+        "kind": "script",
+        "sccId": null,
+        "inDegree": 0,
+        "outDegree": 2,
+        "topoLayer": 3,
+        "cpDepth": 3,
+        "cpHeight": 6,
+        "blastRadius": 6,
+        "buildCost": 3,
+        "bottleneckScore": 0.5905,
+        "isCritical": false,
+        "isArticulationPoint": true,
+        "isCycle": false
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#e6f7ff",
+        "stroke": "#722ed1",
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "node_0004.bst",
+      "type": "rect",
+      "combo": "@root",
+      "x": 400.0,
+      "y": 200.0,
+      "data": {
+        "label": "node_0004.bst",
+        "kind": "source",
+        "sccId": null,
+        "inDegree": 0,
+        "outDegree": 0,
+        "topoLayer": 4,
+        "cpDepth": 4,
+        "cpHeight": 5,
+        "blastRadius": 5,
+        "buildCost": 4,
+        "bottleneckScore": 0.0298,
+        "isCritical": false,
+        "isArticulationPoint": true,
+        "isCycle": false
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#e6f7ff",
+        "stroke": "#eb2f96",
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "node_0005.bst",
+      "type": "rect",
+      "combo": "@root",
+      "x": 500.0,
+      "y": 0.0,
+      "data": {
+        "label": "node_0005.bst",
+        "kind": "build",
+        "sccId": null,
+        "inDegree": 0,
+        "outDegree": 0,
+        "topoLayer": 5,
+        "cpDepth": 5,
+        "cpHeight": 4,
+        "blastRadius": 4,
+        "buildCost": 5,
+        "bottleneckScore": 0.2327,
+        "isCritical": false,
+        "isArticulationPoint": true,
+        "isCycle": false
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#e6f7ff",
+        "stroke": "#1890ff",
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "node_0006.bst",
+      "type": "rect",
+      "combo": "@root",
+      "x": 600.0,
+      "y": 50.0,
+      "data": {
+        "label": "node_0006.bst",
+        "kind": "import",
+        "sccId": null,
+        "inDegree": 0,
+        "outDegree": 2,
+        "topoLayer": 6,
+        "cpDepth": 6,
+        "cpHeight": 3,
+        "blastRadius": 3,
+        "buildCost": 6,
+        "bottleneckScore": 0.1988,
+        "isCritical": false,
+        "isArticulationPoint": true,
+        "isCycle": false
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#e6f7ff",
+        "stroke": "#52c41a",
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "node_0007.bst",
+      "type": "rect",
+      "combo": "@root",
+      "x": 700.0,
+      "y": 100.0,
+      "data": {
+        "label": "node_0007.bst",
+        "kind": "compose",
+        "sccId": null,
+        "inDegree": 0,
+        "outDegree": 2,
+        "topoLayer": 7,
+        "cpDepth": 7,
+        "cpHeight": 2,
+        "blastRadius": 2,
+        "buildCost": 7,
+        "bottleneckScore": 0.4195,
+        "isCritical": false,
+        "isArticulationPoint": true,
+        "isCycle": false
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#e6f7ff",
+        "stroke": "#faad14",
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "node_0008.bst",
+      "type": "rect",
+      "combo": "@root",
+      "x": 800.0,
+      "y": 150.0,
+      "data": {
+        "label": "node_0008.bst",
+        "kind": "script",
+        "sccId": null,
+        "inDegree": 0,
+        "outDegree": 1,
+        "topoLayer": 8,
+        "cpDepth": 8,
+        "cpHeight": 1,
+        "blastRadius": 1,
+        "buildCost": 8,
+        "bottleneckScore": 0.8094,
+        "isCritical": false,
+        "isArticulationPoint": true,
+        "isCycle": false
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#e6f7ff",
+        "stroke": "#722ed1",
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "node_0009.bst",
+      "type": "rect",
+      "combo": "@root",
+      "x": 900.0,
+      "y": 200.0,
+      "data": {
+        "label": "node_0009.bst",
+        "kind": "source",
+        "sccId": null,
+        "inDegree": 0,
+        "outDegree": 0,
+        "topoLayer": 9,
+        "cpDepth": 9,
+        "cpHeight": 0,
+        "blastRadius": 0,
+        "buildCost": 9,
+        "bottleneckScore": 0.7588,
+        "isCritical": true,
+        "isArticulationPoint": false,
+        "isCycle": false
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#e6f7ff",
+        "stroke": "#eb2f96",
+        "lineWidth": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_0",
+      "type": "cubic-horizontal",
+      "source": "node_0002.bst",
+      "target": "node_0000.bst",
+      "data": {
+        "depType": "build",
+        "isCritical": false
+      },
+      "style": {
+        "stroke": "#1890ff",
+        "endArrow": false,
+        "opacity": 0.4,
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "e_1",
+      "type": "cubic-horizontal",
+      "source": "node_0003.bst",
+      "target": "node_0000.bst",
+      "data": {
+        "depType": "build",
+        "isCritical": false
+      },
+      "style": {
+        "stroke": "#1890ff",
+        "endArrow": false,
+        "opacity": 0.4,
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "e_2",
+      "type": "cubic-horizontal",
+      "source": "node_0003.bst",
+      "target": "node_0002.bst",
+      "data": {
+        "depType": "build",
+        "isCritical": false
+      },
+      "style": {
+        "stroke": "#1890ff",
+        "endArrow": false,
+        "opacity": 0.4,
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "e_3",
+      "type": "cubic-horizontal",
+      "source": "node_0006.bst",
+      "target": "node_0000.bst",
+      "data": {
+        "depType": "build",
+        "isCritical": false
+      },
+      "style": {
+        "stroke": "#1890ff",
+        "endArrow": false,
+        "opacity": 0.4,
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "e_4",
+      "type": "cubic-horizontal",
+      "source": "node_0006.bst",
+      "target": "node_0004.bst",
+      "data": {
+        "depType": "build",
+        "isCritical": false
+      },
+      "style": {
+        "stroke": "#1890ff",
+        "endArrow": false,
+        "opacity": 0.4,
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "e_5",
+      "type": "cubic-horizontal",
+      "source": "node_0007.bst",
+      "target": "node_0004.bst",
+      "data": {
+        "depType": "build",
+        "isCritical": false
+      },
+      "style": {
+        "stroke": "#1890ff",
+        "endArrow": false,
+        "opacity": 0.4,
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "e_6",
+      "type": "cubic-horizontal",
+      "source": "node_0007.bst",
+      "target": "node_0005.bst",
+      "data": {
+        "depType": "build",
+        "isCritical": false
+      },
+      "style": {
+        "stroke": "#1890ff",
+        "endArrow": false,
+        "opacity": 0.4,
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "e_7",
+      "type": "cubic-horizontal",
+      "source": "node_0008.bst",
+      "target": "node_0004.bst",
+      "data": {
+        "depType": "build",
+        "isCritical": false
+      },
+      "style": {
+        "stroke": "#1890ff",
+        "endArrow": false,
+        "opacity": 0.4,
+        "lineWidth": 1
+      }
+    }
+  ],
+  "combos": [
+    {
+      "id": "@root",
+      "type": "rect",
+      "data": {
+        "label": "root",
+        "nodeCount": 10,
+        "minTopoLayer": 0,
+        "maxTopoLayer": 9,
+        "maxBlastRadius": 9,
+        "maxBuildCost": 9,
+        "maxBottleneckScore": 1.0,
+        "hasCritical": true
+      },
+      "style": {
+        "fill": "#ffffff",
+        "stroke": "#e8e8e8",
+        "collapsedSize": [
+          240,
+          120
+        ]
+      }
+    }
+  ]
+}
