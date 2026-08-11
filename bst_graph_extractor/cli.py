@@ -6,11 +6,27 @@ Implements T1.1: CLI scaffold, argument parsing, exit codes.
 - Enforces --no-betweenness > --expensive-metrics precedence
 - Validates flag combinations
 - Exit codes: 0 success, 1 fatal error, 2 invalid CLI arguments
+
+Main extraction pipeline:
+  1. Run bst show via bst_interface
+  2. Parse output via parser
+  3. Build graph via graph_builder
+  4. Compute SCCs via scc
+  5. Compute cheap metrics
+  6. Compute reachability
+  7. Compute betweenness (if enabled)
+  8. Compute articulation points (if enabled)
+  9. Compute critical path
+  10. Aggregate combo metrics
+  11. Compute styles
+  12. Optionally compute layout
+  13. Serialize and write output
 """
 
 import argparse
 import sys
-from typing import Optional, Tuple
+import time
+from typing import Optional, Tuple, Dict, Any
 
 
 # Default values from spec §3.1
@@ -210,31 +226,270 @@ def parse_arguments(argv=None) -> Tuple[argparse.Namespace, int, Optional[str]]:
     return args, 0, None
 
 
+def run_extraction(args) -> int:
+    """
+    Run the full extraction pipeline.
+    
+    Returns:
+        Exit code (0 for success, 1 for error)
+    """
+    from .logging_config import setup_logging
+    from .bst_interface import run_bst_show, BstInterfaceError
+    from .parser import parse_bst_show_output
+    from .graph_builder import build_graph
+    from .scc import compute_sccs
+    from .metrics.cheap import compute_cheap_metrics
+    from .metrics.reachability import compute_reachability
+    from .metrics.betweenness import compute_betweenness
+    from .metrics.articulation import compute_articulation_points
+    from .metrics.critical_path import compute_critical_path
+    from .combo_aggregator import compute_combo_aggregates
+    from .styler import compute_styles
+    from .layout import compute_layout, LayoutError, check_graphviz_available
+    from .serializer import assemble_output, write_output_atomic
+    
+    # Setup logging based on verbosity flags
+    log_level = "INFO" if args.verbose else ("ERROR" if args.quiet else "WARNING")
+    setup_logging(level=log_level)
+    
+    logger = get_logger("extractor")
+    
+    # Track performance timing
+    performance = {}
+    start_total = time.time()
+    
+    try:
+        # Stage 1: Run bst show
+        logger.info(f"Running bst show for target: {args.TARGET}")
+        stage_start = time.time()
+        try:
+            bst_output = run_bst_show(args.TARGET)
+        except BstInterfaceError as e:
+            logger.error(f"Failed to run bst show: {e}")
+            return 1
+        performance["bst_show"] = time.time() - stage_start
+        
+        # Stage 2: Parse output
+        logger.info("Parsing bst show output...")
+        stage_start = time.time()
+        nodes, edges = parse_bst_show_output(bst_output, show_invalid=args.show_invalid)
+        performance["parsing"] = time.time() - stage_start
+        logger.info(f"Parsed {len(nodes)} nodes and {len(edges)} edges")
+        
+        # Stage 3: Build graph
+        logger.info("Building graph...")
+        stage_start = time.time()
+        G = build_graph(nodes, edges)
+        performance["graph_building"] = time.time() - stage_start
+        
+        # Stage 4: Compute SCCs
+        logger.info("Computing strongly connected components...")
+        stage_start = time.time()
+        is_cycle = compute_sccs(G)
+        performance["scc"] = time.time() - stage_start
+        
+        # Stage 5: Compute cheap metrics
+        logger.info("Computing cheap metrics...")
+        stage_start = time.time()
+        cheap_result = compute_cheap_metrics(G)
+        node_metrics = cheap_result["node_metrics"]
+        graph_stats = cheap_result["graph_stats"]
+        performance["cheap_metrics"] = time.time() - stage_start
+        
+        # Stage 6: Compute reachability
+        logger.info("Computing reachability...")
+        stage_start = time.time()
+        reach_mode = "disabled_by_user" if args.no_reachability else "auto"
+        reach_result = compute_reachability(
+            G,
+            mode=reach_mode,
+            max_memory_mb=args.max_reachability_memory,
+            targeted_k=args.targeted_reachability_k
+        )
+        reachability_mode = reach_result["reachability_mode"]
+        
+        # Add reachability to node metrics
+        ancestors = reach_result.get("ancestors", {}) or {}
+        descendants = reach_result.get("descendants", {}) or {}
+        for node_id in G.nodes():
+            anc_set = ancestors.get(node_id)
+            desc_set = descendants.get(node_id)
+            if anc_set is not None and desc_set is not None:
+                node_metrics[node_id]["blastRadius"] = len(desc_set)
+                node_metrics[node_id]["ancestorCount"] = len(anc_set)
+            else:
+                node_metrics[node_id]["blastRadius"] = None
+                node_metrics[node_id]["ancestorCount"] = None
+        performance["reachability"] = time.time() - stage_start
+        
+        # Stage 7: Compute betweenness (if enabled)
+        stage_start = time.time()
+        if args.no_betweenness:
+            logger.info("Betweenness disabled by user")
+            betweenness_status = "disabled_by_user"
+            betweenness_scores = None
+        else:
+            enable_exact = args.expensive_metrics
+            betweenness_result = compute_betweenness(
+                G,
+                enable_exact=enable_exact,
+                timeout_seconds=args.metric_timeout_seconds,
+                sample_ratio=args.betweenness_samples / G.number_of_nodes() if G.number_of_nodes() > 0 else 0.01
+            )
+            betweenness_status = betweenness_result["status"]
+            betweenness_scores = betweenness_result.get("node_scores")
+            
+            if betweenness_scores:
+                for node_id, score in betweenness_scores.items():
+                    node_metrics[node_id]["betweenness"] = score
+        performance["betweenness"] = time.time() - stage_start
+        
+        # Stage 8: Compute articulation points
+        stage_start = time.time()
+        articulation_result = compute_articulation_points(
+            G,
+            timeout_seconds=args.metric_timeout_seconds
+        )
+        articulation_status = articulation_result["status"]
+        articulation_points = articulation_result.get("articulation_points") or set()
+        
+        # Mark articulation points in node metrics
+        for node_id in G.nodes():
+            node_metrics[node_id]["isArticulation"] = node_id in articulation_points
+        performance["articulation"] = time.time() - stage_start
+        
+        # Stage 9: Compute critical path
+        logger.info("Computing critical path...")
+        stage_start = time.time()
+        cp_result = compute_critical_path(G, is_cycle)
+        global_critical_path_length = cp_result["global_critical_path_length"]
+        critical_edges = cp_result["critical_edges"]
+        
+        # Add critical path metrics to nodes
+        for node_id, cp_metrics in cp_result["node_metrics"].items():
+            node_metrics[node_id].update(cp_metrics)
+        performance["critical_path"] = time.time() - stage_start
+        
+        # Stage 10: Aggregate combo metrics (placeholder for now)
+        # TODO: Implement combo detection and aggregation
+        combo_aggregates = {}
+        combos = []
+        
+        # Stage 11: Compute styles
+        logger.info("Computing visual styles...")
+        stage_start = time.time()
+        critical_nodes = {nid for nid, m in node_metrics.items() if m.get("isCritical", False)}
+        edge_data = {(e[0], e[1]) for e in G.edges()}
+        style_result = compute_styles(
+            node_metrics,
+            edge_data,
+            critical_nodes,
+            critical_edges,
+            heatmap_active=False
+        )
+        
+        # Merge styles into node/edge data
+        for node_id, styles in style_result["node_styles"].items():
+            node_metrics[node_id].update(styles)
+        performance["styling"] = time.time() - stage_start
+        
+        # Stage 12: Compute layout if requested
+        layout_precomputed = False
+        layout_nodes = None
+        if args.precompute_layout:
+            logger.info("Computing layout with Graphviz...")
+            stage_start = time.time()
+            if not check_graphviz_available():
+                logger.error("Graphviz not found. Install graphviz to use --precompute-layout.")
+                return 1
+            
+            node_list = [{"id": n, "name": node_metrics[n].get("name", n)} for n in G.nodes()]
+            edge_list = [{"source": e[0], "target": e[1], "depType": G.edges[e]["depType"]} for e in G.edges()]
+            
+            try:
+                layout_nodes = compute_layout(node_list, edge_list)
+                layout_precomputed = True
+            except LayoutError as e:
+                logger.error(f"Layout computation failed: {e}")
+                return 1
+            performance["layout"] = time.time() - stage_start
+        
+        # Stage 13: Assemble and write output
+        logger.info("Assembling output...")
+        stage_start = time.time()
+        
+        # Convert node_metrics to list format
+        node_list_output = []
+        for node in G.nodes():
+            node_data = {
+                "id": node,
+                "kind": G.nodes[node].get("kind", "unknown"),
+                "name": G.nodes[node].get("name", node),
+                **node_metrics.get(node, {})
+            }
+            node_list_output.append(node_data)
+        
+        # Convert edges to output format
+        edge_list_output = []
+        for u, v in G.edges():
+            edge_data = {
+                "source": u,
+                "target": v,
+                "depType": G.edges[u, v].get("depType", "build")
+            }
+            # Add edge styling
+            edge_key = (u, v)
+            if edge_key in style_result["edge_styles"]:
+                edge_data.update(style_result["edge_styles"][edge_key])
+            edge_list_output.append(edge_data)
+        
+        output = assemble_output(
+            nodes=node_list_output,
+            edges=edge_list_output,
+            node_metrics={},  # Already merged into nodes
+            graph_stats=graph_stats,
+            combo_aggregates=combo_aggregates if combo_aggregates else None,
+            combos=combos if combos else None,
+            performance=performance if args.performance_report else None,
+            reachability_mode=reachability_mode,
+            betweenness_status=betweenness_status,
+            articulation_status=articulation_status,
+            global_critical_path_length=global_critical_path_length,
+            layout_precomputed=layout_precomputed,
+            layout_nodes=layout_nodes
+        )
+        
+        # Write output atomically
+        write_output_atomic(output, args.output, validate=True)
+        
+        performance["total"] = time.time() - start_total
+        logger.info(f"Extraction completed successfully in {performance['total']:.2f}s")
+        logger.info(f"Output written to: {args.output}")
+        
+        return 0
+        
+    except Exception as e:
+        logger.error(f"Unexpected error during extraction: {e}", exc_info=True)
+        return 1
+
+
 def main():
-    """Test the CLI parser."""
+    """Main entry point for the CLI."""
     args, exit_code, error_msg = parse_arguments()
     
     if exit_code != 0:
         print(f"Error: {error_msg}", file=sys.stderr)
         sys.exit(exit_code)
     
-    print(f"Successfully parsed arguments:")
-    print(f"  TARGET: {args.TARGET}")
-    print(f"  Output: {args.output}")
-    print(f"  Include runtime: {args.include_runtime}")
-    print(f"  Precompute layout: {args.precompute_layout}")
-    print(f"  Expensive metrics: {args.expensive_metrics}")
-    print(f"  No betweenness: {args.no_betweenness} (overrides --expensive-metrics if both set)")
-    print(f"  Betweenness samples: {args.betweenness_samples}")
-    print(f"  No reachability: {args.no_reachability}")
-    print(f"  Max reachability memory: {args.max_reachability_memory} MB")
-    print(f"  Targeted reachability K: {args.targeted_reachability_k}")
-    print(f"  Metric timeout: {args.metric_timeout_seconds}s")
-    print(f"  Performance report: {args.performance_report}")
-    print(f"  Verbose: {args.verbose}")
-    print(f"  Quiet: {args.quiet}")
-    
-    sys.exit(0)
+    # Run the extraction pipeline
+    result = run_extraction(args)
+    sys.exit(result)
+
+
+# Import logger after module-level imports to avoid circular dependency
+def get_logger(name: str):
+    from .logging_config import get_logger
+    return get_logger(name)
 
 
 if __name__ == "__main__":
