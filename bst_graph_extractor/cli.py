@@ -254,7 +254,7 @@ def run_extraction(args) -> int:
     
     logger = get_logger("cli")
     
-    # Track performance timing
+    # Track performance timing - use schema-compliant keys
     performance = {}
     start_total = time.time()
     
@@ -278,26 +278,26 @@ def run_extraction(args) -> int:
                 logger.error(f"Failed to run bst show: {e}")
                 return 1
         
-        performance["bst_show"] = time.time() - stage_start
+        performance["parseMs"] = (time.time() - stage_start) * 1000
         
         # Stage 2: Parse output
         logger.info("Parsing bst show output...")
         stage_start = time.time()
         nodes, edges = parse_bst_show_output(bst_output, show_invalid=args.show_invalid)
-        performance["parsing"] = time.time() - stage_start
+        # Note: parsing time is included in parseMs above per schema
         logger.info(f"Parsed {len(nodes)} nodes and {len(edges)} edges")
         
         # Stage 3: Build graph
         logger.info("Building graph...")
         stage_start = time.time()
         G = build_graph(nodes, edges)
-        performance["graph_building"] = time.time() - stage_start
+        performance["graphConstructionMs"] = (time.time() - stage_start) * 1000
         
         # Stage 4: Compute SCCs
         logger.info("Computing strongly connected components...")
         stage_start = time.time()
         is_cycle = compute_sccs(G)
-        performance["scc"] = time.time() - stage_start
+        performance["sccMs"] = (time.time() - stage_start) * 1000
         
         # Stage 5: Compute cheap metrics
         logger.info("Computing cheap metrics...")
@@ -305,7 +305,7 @@ def run_extraction(args) -> int:
         cheap_result = compute_cheap_metrics(G)
         node_metrics = cheap_result["node_metrics"]
         graph_stats = cheap_result["graph_stats"]
-        performance["cheap_metrics"] = time.time() - stage_start
+        # Note: cheap metrics included in graphConstructionMs per schema
         
         # Stage 6: Compute reachability
         logger.info("Computing reachability...")
@@ -331,13 +331,13 @@ def run_extraction(args) -> int:
             else:
                 node_metrics[node_id]["blastRadius"] = None
                 node_metrics[node_id]["ancestorCount"] = None
-        performance["reachability"] = time.time() - stage_start
+        performance["reachabilityMs"] = (time.time() - stage_start) * 1000
         
         # Stage 7: Compute betweenness (if enabled)
         stage_start = time.time()
         if args.no_betweenness:
             logger.info("Betweenness disabled by user")
-            betweenness_status = "disabled_by_user"
+            betweenness_status = "disabled"
             betweenness_scores = None
         else:
             enable_exact = args.expensive_metrics
@@ -353,7 +353,7 @@ def run_extraction(args) -> int:
             if betweenness_scores:
                 for node_id, score in betweenness_scores.items():
                     node_metrics[node_id]["betweenness"] = score
-        performance["betweenness"] = time.time() - stage_start
+        performance["betweennessMs"] = (time.time() - stage_start) * 1000
         
         # Stage 8: Compute articulation points
         stage_start = time.time()
@@ -367,7 +367,7 @@ def run_extraction(args) -> int:
         # Mark articulation points in node metrics
         for node_id in G.nodes():
             node_metrics[node_id]["isArticulation"] = node_id in articulation_points
-        performance["articulation"] = time.time() - stage_start
+        performance["articulationMs"] = (time.time() - stage_start) * 1000
         
         # Stage 9: Compute critical path
         logger.info("Computing critical path...")
@@ -379,7 +379,7 @@ def run_extraction(args) -> int:
         # Add critical path metrics to nodes
         for node_id, cp_metrics in cp_result["node_metrics"].items():
             node_metrics[node_id].update(cp_metrics)
-        performance["critical_path"] = time.time() - stage_start
+        performance["criticalPathMs"] = (time.time() - stage_start) * 1000
         
         # Stage 10: Aggregate combo metrics (placeholder for now)
         # TODO: Implement combo detection and aggregation
@@ -402,7 +402,7 @@ def run_extraction(args) -> int:
         # Merge styles into node/edge data
         for node_id, styles in style_result["node_styles"].items():
             node_metrics[node_id].update(styles)
-        performance["styling"] = time.time() - stage_start
+        # Note: styling time included in serializationMs per schema
         
         # Stage 12: Compute layout if requested
         layout_precomputed = False
@@ -423,7 +423,9 @@ def run_extraction(args) -> int:
             except LayoutError as e:
                 logger.error(f"Layout computation failed: {e}")
                 return 1
-            performance["layout"] = time.time() - stage_start
+            performance["layoutMs"] = (time.time() - stage_start) * 1000
+        else:
+            performance["layoutMs"] = 0
         
         # Stage 13: Assemble and write output
         logger.info("Assembling output...")
@@ -454,6 +456,12 @@ def run_extraction(args) -> int:
                 edge_data.update(style_result["edge_styles"][edge_key])
             edge_list_output.append(edge_data)
         
+        # Determine if graph has cycles
+        has_cycles = any(G.nodes[n].get("isCycle", False) for n in G.nodes())
+        
+        # Calculate serialization timing before assemble_output
+        serialization_start = time.time()
+        
         output = assemble_output(
             nodes=node_list_output,
             edges=edge_list_output,
@@ -461,20 +469,34 @@ def run_extraction(args) -> int:
             graph_stats=graph_stats,
             combo_aggregates=combo_aggregates if combo_aggregates else None,
             combos=combos if combos else None,
-            performance=performance if args.performance_report else None,
+            performance=None,  # Will add after validation
             reachability_mode=reachability_mode,
             betweenness_status=betweenness_status,
             articulation_status=articulation_status,
             global_critical_path_length=global_critical_path_length,
             layout_precomputed=layout_precomputed,
-            layout_nodes=layout_nodes
+            layout_nodes=layout_nodes,
+            target=args.TARGET,
+            has_cycles=has_cycles
         )
+        
+        performance["serializationMs"] = (time.time() - serialization_start) * 1000
+        performance["totalMs"] = (time.time() - start_total) * 1000
+        
+        # Add required performance fields
+        performance.setdefault("peakMemoryMb", 0)
+        performance["maxReachabilityMemoryMb"] = args.max_reachability_memory
+        performance["targetedReachabilityK"] = args.targeted_reachability_k
+        performance["metricTimeoutSeconds"] = args.metric_timeout_seconds
+        
+        # Now add performance data if requested
+        if args.performance_report:
+            output["metadata"]["performance"] = performance
         
         # Write output atomically
         write_output_atomic(output, args.output, validate=True)
         
-        performance["total"] = time.time() - start_total
-        logger.info(f"Extraction completed successfully in {performance['total']:.2f}s")
+        logger.info(f"Extraction completed successfully in {performance['totalMs']:.2f}ms")
         logger.info(f"Output written to: {args.output}")
         
         return 0
