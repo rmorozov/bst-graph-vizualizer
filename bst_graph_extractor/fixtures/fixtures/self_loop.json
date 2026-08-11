@@ -1,0 +1,137 @@
+{
+  "metadata": {
+    "schemaVersion": "5.5.0",
+    "target": "self_loop.bst",
+    "totalNodes": 1,
+    "totalEdges": 1,
+    "globalCriticalPathLength": 0,
+    "maxTopoLayer": 0,
+    "maxConcurrencyWidth": 1,
+    "density": 1.0,
+    "levelCounts": {
+      "0": 1
+    },
+    "kindColorMap": {
+      "build": "#1890ff",
+      "import": "#52c41a",
+      "compose": "#faad14",
+      "script": "#722ed1",
+      "source": "#eb2f96"
+    },
+    "depTypeColorMap": {
+      "build": "#1890ff",
+      "runtime": "#52c41a",
+      "both": "#722ed1"
+    },
+    "heatmapGradient": [
+      "#fffbe6",
+      "#fff1b8",
+      "#ff7a45",
+      "#cf1322"
+    ],
+    "hasCycles": true,
+    "layoutPrecomputed": false,
+    "reachabilityMode": "exact",
+    "bottleneckMetric": "disabled",
+    "articulationSemantics": "undirected_projection",
+    "graphSizeClass": "normal",
+    "performance": {
+      "parseMs": 0,
+      "graphConstructionMs": 0,
+      "sccMs": 0,
+      "reachabilityMs": 0,
+      "criticalPathMs": 0,
+      "betweennessMs": 0,
+      "articulationMs": 0,
+      "layoutMs": 0,
+      "serializationMs": 0,
+      "totalMs": 0,
+      "peakMemoryMb": 0,
+      "maxReachabilityMemoryMb": 512,
+      "targetedReachabilityK": 2000,
+      "metricTimeoutSeconds": 60
+    },
+    "analysisModes": {
+      "reachability": "exact",
+      "betweenness": "disabled",
+      "articulation": "disabled",
+      "layout": "none"
+    }
+  },
+  "nodes": [
+    {
+      "id": "loop_node.bst",
+      "type": "rect",
+      "combo": "@root",
+      "x": 0.0,
+      "y": 0.0,
+      "data": {
+        "label": "loop_node.bst",
+        "kind": "build",
+        "sccId": 0,
+        "inDegree": 1,
+        "outDegree": 1,
+        "topoLayer": 0,
+        "cpDepth": 0,
+        "cpHeight": 0,
+        "blastRadius": null,
+        "buildCost": null,
+        "bottleneckScore": null,
+        "isCritical": false,
+        "isArticulationPoint": false,
+        "isCycle": true
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#e6f7ff",
+        "stroke": "#1890ff",
+        "lineWidth": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_0",
+      "type": "loop",
+      "source": "loop_node.bst",
+      "target": "loop_node.bst",
+      "data": {
+        "depType": "build",
+        "isCritical": false
+      },
+      "style": {
+        "stroke": "#1890ff",
+        "endArrow": false,
+        "opacity": 0.4,
+        "lineWidth": 1
+      }
+    }
+  ],
+  "combos": [
+    {
+      "id": "@root",
+      "type": "rect",
+      "data": {
+        "label": "root",
+        "nodeCount": 1,
+        "minTopoLayer": 0,
+        "maxTopoLayer": 0,
+        "maxBlastRadius": null,
+        "maxBuildCost": null,
+        "maxBottleneckScore": null,
+        "hasCritical": false
+      },
+      "style": {
+        "fill": "#ffffff",
+        "stroke": "#e8e8e8",
+        "collapsedSize": [
+          120,
+          60
+        ]
+      }
+    }
+  ]
+}

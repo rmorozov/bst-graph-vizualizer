@@ -1,0 +1,408 @@
+{
+  "metadata": {
+    "schemaVersion": "5.5.0",
+    "target": "nested.bst",
+    "totalNodes": 6,
+    "totalEdges": 5,
+    "globalCriticalPathLength": 3,
+    "maxTopoLayer": 2,
+    "maxConcurrencyWidth": 2,
+    "density": 0.33,
+    "levelCounts": {
+      "0": 3,
+      "1": 2,
+      "2": 1
+    },
+    "kindColorMap": {
+      "build": "#1890ff",
+      "import": "#52c41a",
+      "compose": "#faad14",
+      "script": "#722ed1",
+      "source": "#eb2f96"
+    },
+    "depTypeColorMap": {
+      "build": "#1890ff",
+      "runtime": "#52c41a",
+      "both": "#722ed1"
+    },
+    "heatmapGradient": [
+      "#fffbe6",
+      "#fff1b8",
+      "#ff7a45",
+      "#cf1322"
+    ],
+    "hasCycles": false,
+    "layoutPrecomputed": false,
+    "reachabilityMode": "exact",
+    "bottleneckMetric": "exact",
+    "articulationSemantics": "undirected_projection",
+    "graphSizeClass": "normal",
+    "performance": {
+      "parseMs": 0,
+      "graphConstructionMs": 0,
+      "sccMs": 0,
+      "reachabilityMs": 0,
+      "criticalPathMs": 0,
+      "betweennessMs": 0,
+      "articulationMs": 0,
+      "layoutMs": 0,
+      "serializationMs": 0,
+      "totalMs": 0,
+      "peakMemoryMb": 0,
+      "maxReachabilityMemoryMb": 512,
+      "targetedReachabilityK": 2000,
+      "metricTimeoutSeconds": 60
+    },
+    "analysisModes": {
+      "reachability": "exact",
+      "betweenness": "exact",
+      "articulation": "exact",
+      "layout": "none"
+    }
+  },
+  "nodes": [
+    {
+      "id": "root_target.bst",
+      "type": "rect",
+      "combo": "components",
+      "x": 200.0,
+      "y": 0.0,
+      "data": {
+        "label": "root_target.bst",
+        "kind": "build",
+        "sccId": null,
+        "inDegree": 0,
+        "outDegree": 2,
+        "topoLayer": 2,
+        "cpDepth": 2,
+        "cpHeight": 0,
+        "blastRadius": 0,
+        "buildCost": 5,
+        "bottleneckScore": null,
+        "isCritical": true,
+        "isArticulationPoint": false,
+        "isCycle": false
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#e6f7ff",
+        "stroke": "#1890ff",
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "components/component_a.bst",
+      "type": "rect",
+      "combo": "components",
+      "x": 100.0,
+      "y": -50.0,
+      "data": {
+        "label": "component_a.bst",
+        "kind": "build",
+        "sccId": null,
+        "inDegree": 1,
+        "outDegree": 2,
+        "topoLayer": 1,
+        "cpDepth": 1,
+        "cpHeight": 1,
+        "blastRadius": 1,
+        "buildCost": 2,
+        "bottleneckScore": 0.5,
+        "isCritical": true,
+        "isArticulationPoint": true,
+        "isCycle": false
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#e6f7ff",
+        "stroke": "#1890ff",
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "components/component_b.bst",
+      "type": "rect",
+      "combo": "components",
+      "x": 100.0,
+      "y": 50.0,
+      "data": {
+        "label": "component_b.bst",
+        "kind": "build",
+        "sccId": null,
+        "inDegree": 1,
+        "outDegree": 1,
+        "topoLayer": 1,
+        "cpDepth": 1,
+        "cpHeight": 1,
+        "blastRadius": 1,
+        "buildCost": 1,
+        "bottleneckScore": 0.0,
+        "isCritical": false,
+        "isArticulationPoint": false,
+        "isCycle": false
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#e6f7ff",
+        "stroke": "#1890ff",
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "base/library1.bst",
+      "type": "rect",
+      "combo": "base",
+      "x": 0.0,
+      "y": -100.0,
+      "data": {
+        "label": "library1.bst",
+        "kind": "import",
+        "sccId": null,
+        "inDegree": 1,
+        "outDegree": 0,
+        "topoLayer": 0,
+        "cpDepth": 0,
+        "cpHeight": 2,
+        "blastRadius": 3,
+        "buildCost": 0,
+        "bottleneckScore": 0.0,
+        "isCritical": false,
+        "isArticulationPoint": false,
+        "isCycle": false
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#f6ffed",
+        "stroke": "#52c41a",
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "base/library2.bst",
+      "type": "rect",
+      "combo": "base",
+      "x": 0.0,
+      "y": -50.0,
+      "data": {
+        "label": "library2.bst",
+        "kind": "import",
+        "sccId": null,
+        "inDegree": 1,
+        "outDegree": 0,
+        "topoLayer": 0,
+        "cpDepth": 0,
+        "cpHeight": 2,
+        "blastRadius": 2,
+        "buildCost": 0,
+        "bottleneckScore": 0.0,
+        "isCritical": false,
+        "isArticulationPoint": false,
+        "isCycle": false
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#f6ffed",
+        "stroke": "#52c41a",
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "base/library3.bst",
+      "type": "rect",
+      "combo": "base",
+      "x": 0.0,
+      "y": 50.0,
+      "data": {
+        "label": "library3.bst",
+        "kind": "import",
+        "sccId": null,
+        "inDegree": 1,
+        "outDegree": 0,
+        "topoLayer": 0,
+        "cpDepth": 0,
+        "cpHeight": 2,
+        "blastRadius": 1,
+        "buildCost": 0,
+        "bottleneckScore": 0.0,
+        "isCritical": false,
+        "isArticulationPoint": false,
+        "isCycle": false
+      },
+      "style": {
+        "size": [
+          140,
+          36
+        ],
+        "fill": "#f6ffed",
+        "stroke": "#52c41a",
+        "lineWidth": 1
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_0",
+      "type": "cubic-horizontal",
+      "source": "root_target.bst",
+      "target": "components/component_a.bst",
+      "data": {
+        "depType": "build",
+        "isCritical": true
+      },
+      "style": {
+        "stroke": "#1890ff",
+        "endArrow": false,
+        "opacity": 1.0,
+        "lineWidth": 4
+      }
+    },
+    {
+      "id": "e_1",
+      "type": "cubic-horizontal",
+      "source": "root_target.bst",
+      "target": "components/component_b.bst",
+      "data": {
+        "depType": "build",
+        "isCritical": false
+      },
+      "style": {
+        "stroke": "#1890ff",
+        "endArrow": false,
+        "opacity": 0.4,
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "e_2",
+      "type": "cubic-horizontal",
+      "source": "components/component_a.bst",
+      "target": "base/library1.bst",
+      "data": {
+        "depType": "build",
+        "isCritical": false
+      },
+      "style": {
+        "stroke": "#1890ff",
+        "endArrow": false,
+        "opacity": 0.4,
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "e_3",
+      "type": "cubic-horizontal",
+      "source": "components/component_a.bst",
+      "target": "base/library2.bst",
+      "data": {
+        "depType": "build",
+        "isCritical": false
+      },
+      "style": {
+        "stroke": "#1890ff",
+        "endArrow": false,
+        "opacity": 0.4,
+        "lineWidth": 1
+      }
+    },
+    {
+      "id": "e_4",
+      "type": "cubic-horizontal",
+      "source": "components/component_b.bst",
+      "target": "base/library3.bst",
+      "data": {
+        "depType": "build",
+        "isCritical": false
+      },
+      "style": {
+        "stroke": "#1890ff",
+        "endArrow": false,
+        "opacity": 0.4,
+        "lineWidth": 1
+      }
+    }
+  ],
+  "combos": [
+    {
+      "id": "base",
+      "type": "rect",
+      "combo": "components",
+      "data": {
+        "label": "base",
+        "nodeCount": 3,
+        "minTopoLayer": 0,
+        "maxTopoLayer": 0,
+        "maxBlastRadius": 3,
+        "maxBuildCost": 0,
+        "maxBottleneckScore": 0.0,
+        "hasCritical": false
+      },
+      "style": {
+        "fill": "#fafafa",
+        "stroke": "#d9d9d9",
+        "collapsedSize": [
+          100,
+          50
+        ]
+      }
+    },
+    {
+      "id": "components",
+      "type": "rect",
+      "data": {
+        "label": "components",
+        "nodeCount": 5,
+        "minTopoLayer": 0,
+        "maxTopoLayer": 2,
+        "maxBlastRadius": 3,
+        "maxBuildCost": 5,
+        "maxBottleneckScore": 0.5,
+        "hasCritical": true
+      },
+      "style": {
+        "fill": "#fafafa",
+        "stroke": "#d9d9d9",
+        "collapsedSize": [
+          140,
+          70
+        ]
+      }
+    },
+    {
+      "id": "@root",
+      "type": "rect",
+      "data": {
+        "label": "root",
+        "nodeCount": 6,
+        "minTopoLayer": 0,
+        "maxTopoLayer": 2,
+        "maxBlastRadius": 3,
+        "maxBuildCost": 5,
+        "maxBottleneckScore": 0.5,
+        "hasCritical": true
+      },
+      "style": {
+        "fill": "#ffffff",
+        "stroke": "#e8e8e8",
+        "collapsedSize": [
+          240,
+          120
+        ]
+      }
+    }
+  ]
+}

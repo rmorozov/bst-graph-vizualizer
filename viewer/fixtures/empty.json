@@ -1,0 +1,62 @@
+{
+  "metadata": {
+    "schemaVersion": "5.5.0",
+    "target": "empty.bst",
+    "totalNodes": 0,
+    "totalEdges": 0,
+    "globalCriticalPathLength": 0,
+    "maxTopoLayer": 0,
+    "maxConcurrencyWidth": 0,
+    "density": 0.0,
+    "levelCounts": {},
+    "kindColorMap": {
+      "build": "#1890ff",
+      "import": "#52c41a",
+      "compose": "#faad14",
+      "script": "#722ed1",
+      "source": "#eb2f96"
+    },
+    "depTypeColorMap": {
+      "build": "#1890ff",
+      "runtime": "#52c41a",
+      "both": "#722ed1"
+    },
+    "heatmapGradient": [
+      "#fffbe6",
+      "#fff1b8",
+      "#ff7a45",
+      "#cf1322"
+    ],
+    "hasCycles": false,
+    "layoutPrecomputed": false,
+    "reachabilityMode": "exact",
+    "bottleneckMetric": "disabled",
+    "articulationSemantics": "undirected_projection",
+    "graphSizeClass": "normal",
+    "performance": {
+      "parseMs": 0,
+      "graphConstructionMs": 0,
+      "sccMs": 0,
+      "reachabilityMs": 0,
+      "criticalPathMs": 0,
+      "betweennessMs": 0,
+      "articulationMs": 0,
+      "layoutMs": 0,
+      "serializationMs": 0,
+      "totalMs": 0,
+      "peakMemoryMb": 0,
+      "maxReachabilityMemoryMb": 512,
+      "targetedReachabilityK": 2000,
+      "metricTimeoutSeconds": 60
+    },
+    "analysisModes": {
+      "reachability": "exact",
+      "betweenness": "disabled",
+      "articulation": "disabled",
+      "layout": "none"
+    }
+  },
+  "nodes": [],
+  "edges": [],
+  "combos": []
+}

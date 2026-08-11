@@ -1,0 +1,14 @@
+root_target|build
+- components/component_a.bst
+- components/component_b.bst
+
+components/component_a.bst|build
+- base/library1.bst
+- base/library2.bst
+
+components/component_b.bst|build
+- base/library3.bst
+
+base/library1.bst|import
+base/library2.bst|import
+base/library3.bst|import
