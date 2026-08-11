@@ -249,24 +249,35 @@ def run_extraction(args) -> int:
     from .serializer import assemble_output, write_output_atomic
     
     # Setup logging based on verbosity flags
-    log_level = "INFO" if args.verbose else ("ERROR" if args.quiet else "WARNING")
-    setup_logging(level=log_level)
+    from .logging_config import initialize_logging, get_logger
+    initialize_logging(verbose=args.verbose, quiet=args.quiet)
     
-    logger = get_logger("extractor")
+    logger = get_logger("cli")
     
     # Track performance timing
     performance = {}
     start_total = time.time()
     
     try:
-        # Stage 1: Run bst show
+        # Stage 1: Run bst show (or read from file if it's a .txt fixture)
         logger.info(f"Running bst show for target: {args.TARGET}")
         stage_start = time.time()
-        try:
-            bst_output = run_bst_show(args.TARGET)
-        except BstInterfaceError as e:
-            logger.error(f"Failed to run bst show: {e}")
-            return 1
+        
+        # Check if TARGET is a fixture file (.txt)
+        import os
+        if args.TARGET.endswith('.txt') and os.path.isfile(args.TARGET):
+            # Read directly from fixture file
+            with open(args.TARGET, 'r') as f:
+                bst_output = f.read()
+            logger.info(f"Read fixture from file: {args.TARGET}")
+        else:
+            # Run bst show normally
+            try:
+                bst_output = run_bst_show(args.TARGET)
+            except BstInterfaceError as e:
+                logger.error(f"Failed to run bst show: {e}")
+                return 1
+        
         performance["bst_show"] = time.time() - stage_start
         
         # Stage 2: Parse output
