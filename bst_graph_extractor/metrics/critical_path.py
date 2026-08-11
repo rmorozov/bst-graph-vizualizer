@@ -156,7 +156,7 @@ def _compute_cp_depth(G: nx.DiGraph, node: str) -> int:
         if not sources:
             return 0
         
-        lengths = nx.multi_source_shortest_path_length(G, sources)
+        lengths = nx.multi_source_dijkstra_path_length(G, sources)
         return lengths.get(node, 0)
     except Exception:
         return 0
@@ -171,7 +171,7 @@ def _compute_cp_height(G: nx.DiGraph, node: str) -> int:
             return 0
         
         G_rev = G.reverse()
-        lengths = nx.multi_source_shortest_path_length(G_rev, sinks)
+        lengths = nx.multi_source_dijkstra_path_length(G_rev, sinks)
         return lengths.get(node, 0)
     except Exception:
         return 0
