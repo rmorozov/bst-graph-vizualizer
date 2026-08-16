@@ -1,0 +1,185 @@
+#!/usr/bin/env python3
+"""A stand-in for the `bst` CLI, good enough to exercise bst_graph_extractor.
+
+Why this exists: BuildStream is not installable in every CI sandbox, but the
+extractor shells out to `bst show` unconditionally, with no file-input mode.
+Without a shim there is no way to run the tool at all — see the
+`no-offline-input` finding in docs/scenarios.md.
+
+It reads `elements/**/*.bst` from the project root and reproduces the three
+`bst show` invocations the specification (§3.2) says the extractor makes, plus
+BuildStream's real *default* output format for a bare `bst show TARGET`.
+
+Usage:
+    PATH="$PWD/tools/bst-shim:$PATH" bst show --deps all \
+        --format '%{name}|%{kind}' app/stack.bst
+"""
+
+import argparse
+import os
+import pathlib
+import sys
+
+try:
+    import yaml
+except ImportError:  # keep the shim dependency-free
+    yaml = None
+
+
+def _parse_element(path: pathlib.Path):
+    """Minimal .bst reader: kind + depends + runtime-depends."""
+    text = path.read_text()
+    if yaml is not None:
+        doc = yaml.safe_load(text) or {}
+        kind = doc.get("kind", "unknown")
+        build = [d if isinstance(d, str) else d.get("filename") for d in doc.get("depends", [])]
+        run = [d if isinstance(d, str) else d.get("filename") for d in doc.get("runtime-depends", [])]
+        return kind, [d for d in build if d], [d for d in run if d]
+
+    kind, build, run, section = "unknown", [], [], None
+    for raw in text.splitlines():
+        line = raw.rstrip()
+        if line.startswith("kind:"):
+            kind = line.split(":", 1)[1].strip()
+        elif line.startswith("depends:"):
+            section = build
+        elif line.startswith("runtime-depends:"):
+            section = run
+        elif line.startswith("- ") and section is not None:
+            section.append(line[2:].strip())
+        elif line and not line.startswith((" ", "-")):
+            section = None
+    return kind, build, run
+
+
+def load_project(root: pathlib.Path):
+    elements_dir = root / "elements"
+    graph = {}
+    for path in sorted(elements_dir.rglob("*.bst")):
+        name = str(path.relative_to(elements_dir))
+        graph[name] = _parse_element(path)
+    return graph
+
+
+def closure(graph, target, include_runtime):
+    seen, stack = [], [target]
+    while stack:
+        node = stack.pop()
+        if node in seen or node not in graph:
+            continue
+        seen.append(node)
+        kind, build, run = graph[node]
+        stack.extend(build)
+        if include_runtime:
+            stack.extend(run)
+    # BuildStream prints dependencies before dependents.
+    order, visiting = [], set()
+
+    def visit(n):
+        if n in order or n in visiting or n not in graph:
+            return
+        visiting.add(n)
+        _, b, r = graph[n]
+        for d in b + (r if include_runtime else []):
+            visit(d)
+        visiting.discard(n)
+        order.append(n)
+
+    for n in seen:
+        visit(n)
+    return [n for n in order if n in seen]
+
+
+def render(fmt, name, kind, deps):
+    out = fmt
+    out = out.replace("%{name}", name)
+    out = out.replace("%{kind}", kind)
+    out = out.replace("%{state}", "buildable")
+    out = out.replace("%{full-key}", f"{abs(hash(name)):064x}"[:64])
+    if "%{deps}" in out:
+        rendered = "[" + ", ".join(deps) + "]" if deps else "[]"
+        out = out.replace("%{deps}", rendered)
+    return out.replace("\\n", "\n")
+
+
+def main(argv):
+    # Hand-rolled rather than argparse: argparse splits positionals into groups
+    # around interspersed options, so `show --deps all TARGET` loses TARGET.
+    class Args:
+        deps = "all"
+        fmt = None
+        directory = os.environ.get("BST_SHIM_PROJECT", ".")
+
+    args = Args()
+    words = []
+    it = iter(argv)
+    for tok in it:
+        if tok in ("--deps", "--format", "--directory", "-C"):
+            value = next(it, None)
+            if tok == "--deps":
+                args.deps = value
+            elif tok == "--format":
+                args.fmt = value
+            else:
+                args.directory = value
+        elif tok.startswith("--") and "=" in tok:
+            key, value = tok[2:].split("=", 1)
+            setattr(args, {"deps": "deps", "format": "fmt", "directory": "directory"}.get(key, key), value)
+        elif tok.startswith("-"):
+            continue  # ignore flags this shim doesn't model
+        else:
+            words.append(tok)
+
+    command = words.pop(0) if words else None
+    target = words.pop(0) if words else None
+    if command != "show" or not target:
+        print("usage: bst show [--deps all|build|run] [--format FMT] TARGET", file=sys.stderr)
+        return 2
+
+    root = pathlib.Path(args.directory).resolve()
+    graph = load_project(root)
+    if target not in graph:
+        print(f"Element not found: {target}", file=sys.stderr)
+        return 255
+
+    nodes = closure(graph, target, include_runtime=args.deps in ("all", "run"))
+
+    # Compatibility escape hatch. The extractor calls a bare `bst show TARGET`
+    # and parses an invented grammar ("id|kind" lines followed by "- dep"
+    # continuation lines) that no real `bst show` invocation produces. Setting
+    # BST_SHIM_LEGACY=1 makes the shim emit that invented grammar so the
+    # extractor's *analysis* stages can be evaluated at all. This is a
+    # workaround for a bug, not a supported BuildStream format — see the
+    # `parser-contract` findings in docs/scenarios.md.
+    if os.environ.get("BST_SHIM_LEGACY") == "1" and args.fmt is None:
+        for name in nodes:
+            kind, build, run = graph[name]
+            print(f"{name}|{kind}")
+            for dep in build:
+                print(f"- {dep}")
+            if args.deps in ("all", "run"):
+                for dep in run:
+                    print(f"- {dep} runtime")
+        return 0
+
+    # BuildStream's real default format when --format is omitted.
+    fmt = args.fmt or "%{state: >12} %{full-key: <64} %{name}"
+    fmt = fmt.replace("%{state: >12}", "%{state}").replace("%{full-key: <64}", "%{full-key}")
+
+    for name in nodes:
+        kind, build, run = graph[name]
+        if args.deps == "run":
+            deps = run
+        elif args.deps == "build":
+            deps = build
+        else:
+            deps = build + run
+        print(render(fmt, name, kind, deps))
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main(sys.argv[1:]))
+    except BrokenPipeError:  # `bst show ... | head` is a normal thing to do
+        sys.exit(0)
